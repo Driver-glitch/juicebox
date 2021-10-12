@@ -1,8 +1,9 @@
 // inside db/index.js
 const { Client } = require('pg'); // imports the pg module
-
+const password = 'dan'
 // supply the db name and location of the database
-const client = new Client('postgres://localhost:5432/juicebox-dev');
+const client = new Client(`postgres://postgres:${password}@localhost:5432/juicebox-dev`);
+// 'postgres://username:password@localhost/database_name`
 
 module.exports = {
   client,

@@ -76,17 +76,17 @@ async function getUserById(userId) {
   authorId,
   title,
   content,
-  tags = [] // this is new
+  tags = []
 }) {
   try {
     const { rows: [ post ] } = await client.query(`
-      INSERT INTO posts("authorId", title, content)
+      INSERT INTO posts("authorId", title, content) 
       VALUES($1, $2, $3)
       RETURNING *;
     `, [authorId, title, content]);
-   
+
     const tagList = await createTags(tags);
-    
+
     return await addTagsToPost(post.id, tagList);
   } catch (error) {
     throw error;
@@ -223,20 +223,34 @@ async function getPostById(postId) {
       FROM posts
       WHERE id=$1;
     `, [postId]);
+
+    // THIS IS NEW
+    if (!post) {
+      throw {
+        name: "PostNotFoundError",
+        message: "Could not find a post with that postId"
+      };
+    }
+    // NEWNESS ENDS HERE
+
     const { rows: tags } = await client.query(`
       SELECT tags.*
       FROM tags
       JOIN post_tags ON tags.id=post_tags."tagId"
       WHERE post_tags."postId"=$1;
     `, [postId])
+
     const { rows: [author] } = await client.query(`
       SELECT id, username, name, location
       FROM users
       WHERE id=$1;
     `, [post.authorId])
+
     post.tags = tags;
     post.author = author;
+
     delete post.authorId;
+
     return post;
   } catch (error) {
     throw error;
